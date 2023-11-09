@@ -1,0 +1,7 @@
+.git
+.bundle/
+.node_modules
+.tool-versions
+log/development.log
+log/production.log
+tmp/
