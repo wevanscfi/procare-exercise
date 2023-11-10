@@ -1,0 +1,23 @@
+{{- $scope := dict "Values" (merge dict .Values.karafka_deployment $.Values) "Chart" $.Chart "Release" $.Release "Template" $.Template }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common.fullname" $scope }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      {{- include "common.selectorLabels" $scope | nindent 6 }}
+  {{- if .Values.strategy }}
+  strategy:
+    {{- toYaml .Values.strategy | nindent 4 }}
+  {{- end }}
+  template:
+    metadata:
+      {{- include "pod.metadata" $scope | nindent 6 }}
+    spec:
+      {{- include "pod.spec" $scope | nindent 6 }}
+      containers:
+        {{- include "container.spec" $scope | nindent 8 }}
+

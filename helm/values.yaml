@@ -61,6 +61,8 @@ appEnv:
 karafka_deployment:
   nameOverride: karafka-consumer
   command:
+    - bundle
+    - exec
     - karafka
     - server
 
