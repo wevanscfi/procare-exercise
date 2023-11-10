@@ -1,5 +1,5 @@
 # Multistage Dockerfile 
-FROM ruby:3.3.0-preview2-slim-bookworm as builder
+FROM ruby:3.3 as builder
 
 RUN apt-get update && apt-get clean
 
