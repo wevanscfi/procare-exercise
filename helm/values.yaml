@@ -1,0 +1,142 @@
+# -- Set the base deployment replica count
+replicaCount: 1
+
+image:
+  # -- Set the base deployment image to use
+  name: pevanscfi/procare-exercise
+  # -- Set the image pull policy
+  pullPolicy: Always
+  # -- Set the base deployment tag
+  tag: "cf683e"
+
+# @ignore
+imagePullSecrets: []
+
+# @ignore
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# @ignore
+additionalContainers: []
+# @ignore
+mainContainer: {}
+
+# -- Additional pod annotations
+podAnnotations: {}
+
+# @ignore
+podSecurityContext: {}
+  # fsGroup: 2000
+
+# @ignore
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+# -- Service configruation
+service:
+  type: ClusterIP
+  port: 3000
+
+# -- Set the base deployment container ports
+ports:
+  - name: http
+    containerPort: 3000
+
+# -- Set the base deployment env vars
+appEnv:
+  foo: bar
+
+# -- Set Karafka consumer deployment vars
+karafka_deployment:
+  nameOverride: karafka-consumer
+  command:
+    - bundle
+    - exec
+    - karafka
+    - server
+
+# -- Set database migration vars
+db_migrate_job:
+  nameOverride: db-migrate-job
+  command:
+    - ./bin/db-setup
+
+# -- Set karafka migration vars
+karafka_migrate_job:
+  nameOverride: karafka-migrate-job
+  command:
+    - ./bin/karafka-setup
+
+# -- Postgresql configuration
+postgresql:
+  operator:
+    enabled: true
+  replicas: 1
+  persistence:
+    size: 5Gi
+  primary:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 256Mi
+
+# -- Kafka configuration
+kafka:
+  operator:
+    enabled: true
+  replicas: 1
+  persistence:
+    size: 5Gi
+
+# -- Ingress configuration
+ingress:
+  enabled: false
+  className: ""
+  issuer: ""
+  annotations: {}
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls:
+    - secretName: chart-example-tls
+      hosts:
+        - chart-example.local
+
+# -- Set base deployment resources
+resources: {}
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+# -- HPA configuration
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+# @ignore
+nodeSelector: {}
+
+# @ignore
+tolerations: []
+
+# @ignore
+affinity: {}

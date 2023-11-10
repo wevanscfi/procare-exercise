@@ -1,0 +1,25 @@
+{{- if .Values.postgresql.operator.enabled }}
+apiVersion: "acid.zalan.do/v1"
+kind: postgresql
+metadata:
+  name: {{ include "postgresql.fullname" . }}
+  annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/sync-wave: "-2"
+spec:
+  teamId: wevans
+  volume:
+    size: {{ .Values.postgresql.persistence.size }}
+  numberOfInstances: {{ .Values.postgresql.replicas }}
+  users:
+    superadmin:  # database owner
+    - superuser
+    - createdb
+    {{ include "postgresql.username" . }}: # application user
+    - createdb
+  postgresql:
+    version: "14"
+  resources:
+    {{- toYaml .Values.postgresql.primary.resources | nindent 4 }}
+{{- end }}
+

@@ -1,0 +1,22 @@
+{{- $scope := dict "Values" (merge dict .Values.karafka_migrate_job $.Values) "Chart" $.Chart "Release" $.Release "Template" $.Template }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "common.fullname" $scope }}-{{ .Release.Revision }}
+  annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/sync-wave: "-1"
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+spec:
+  backoffLimit: {{ .Values.backoffLimit }}
+  parallelism: {{ .Values.parallelism }}
+  template:
+    metadata:
+      {{- include "pod.metadata" $scope | nindent 6 }}
+    spec:
+      {{- include "pod.spec" $scope | nindent 6 }}
+      restartPolicy: Never
+      containers:
+        {{- include "container.spec" $scope | nindent 8 }}
+
