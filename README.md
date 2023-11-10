@@ -42,15 +42,13 @@ You tell us! Show off. Be creative. We're really interested in what you might bu
 
 ## Usage
 
-1. Start Kafka using the `docker-compose.yml` by running: `docker-compose up`
-2. Run the setup script `./bin/bootstrap` (it will help!)
-3. Run `bundle exec rails server` to start the Rails web server
-4. Run `bundle exec karafka server` to start Karafka consumption server
-5. Visit `localhost:3000` and refresh the page couple of times
-6. Visit `localhost:3000/karafka` to see and explore the Karafka Web UI
+1. Run database migrations and other bootstrap steps `./bin/container-bootstrap`
+1. Run the web service `docker-compose run --service-ports web`
+1. Run the consumer service `docker-compose run consumer`
+1. Run the full stack in the background `docker-compose up -d`
+1. Clean up `docker-compose down`
 
-You can also run RSpec specs to see how the testing RSpec library integrates with Rails:
-
+You can also run RSpec tests 
 ```
-bundle exec rspec spec
+docker-compose run web rspec spec
 ```

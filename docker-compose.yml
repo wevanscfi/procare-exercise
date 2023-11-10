@@ -1,13 +1,73 @@
 version: '2'
 
+volumes:
+  db_data:
+  kafka_data:
+
 services:
+  web:
+    image: procare-exercise
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    volumes:
+      - .:/opt/app
+    tmpfs:
+      - /opt/app/tmp/
+      - /opt/app/log/
+    depends_on:
+      - postgres
+      - kafka
+    environment:
+      RAILS_ENV: development
+      DATABASE_HOST: postgres
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: localpw
+      KAFKA_HOST: kafka
+      PIDFILE: /dev/null
+
+  consumer:
+    image: procare-exercise
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command:
+      - karafka
+      - server
+    volumes:
+      - .:/opt/app
+    tmpfs:
+      - /opt/app/tmp/
+      - /opt/app/log/
+    depends_on:
+      - postgres
+      - kafka
+    environment:
+      RAILS_ENV: development
+      DATABASE_HOST: postgres
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: localpw
+      KAFKA_HOST: kafka
+
+  postgres:
+    image: postgres:14-alpine
+    ports:
+      - 5432:5432
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=localpw
+      - POSTGRES_USER=postgres
+
   kafka:
     container_name: kafka
     image: confluentinc/cp-kafka:7.5.1
-
     ports:
       - 9092:9092
-
+    volumes:
+      - kafka_data:/var/lib/zookeeper/data
     environment:
       CLUSTER_ID: kafka-docker-cluster-1
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
@@ -16,7 +76,7 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://127.0.0.1:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_BROKER_ID: 1
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@127.0.0.1:9093
       ALLOW_PLAINTEXT_LISTENER: 'yes'

@@ -1,0 +1,7 @@
+.bundle/
+.node_modules
+.tool-versions
+log/
+log/
+tmp/
+coverage/

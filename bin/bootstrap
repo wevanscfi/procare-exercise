@@ -1,16 +1,15 @@
 #!/usr/bin/env bash
-
-# Install all the dependencies
-bundle install
-yarn install
+ 
 # Create db
-bundle exec rake db:create
-bundle exec rails db:migrate
+docker-compose run web rake db:create
+docker-compose run web rails db:migrate
 # Create test db
-bundle exec rake db:test:prepare
+docker-compose run web rake db:test:prepare
 # Seed dev db
-bundle exec rails db:seed
+docker-compose run web rails db:seed
+
 # Create and bootstrap needed app topics
-bundle exec karafka topics migrate
+docker-compose run consumer karafka topics migrate
 # Bootstrap the web UI
-bundle exec karafka-web migrate
+docker compose run consumer karafka-web migrate
+
