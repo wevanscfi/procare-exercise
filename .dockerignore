@@ -1,4 +1,5 @@
 .git
+.circleci
 .bundle
 .node_modules
 .tool-versions

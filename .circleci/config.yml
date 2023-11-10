@@ -1,0 +1,102 @@
+version: 2.1
+workflows:
+  build_test_push:
+    jobs:
+      - build_and_push
+      #- cypress:
+          #requires:
+            #- build_and_push
+      - rspec:
+          requires:
+            - build_and_push
+      #- promote:
+          #filters:
+            #branches:
+              #only:
+                #- main
+          #type: approval
+          #requires:
+            #- cypress
+            #- rspec
+      #- deploy:
+          #filters:
+            #branches:
+              #only:
+                #- main
+          #requires:
+            #- promote
+jobs:
+  build_and_push:
+    machine: # executor type
+      image: ubuntu-2004:current
+      docker_layer_caching: true
+    steps:
+      - checkout
+      - run:
+          name: Build application Docker image
+          command: |
+            docker build -t "pevanscfi/procare-exercise:${CIRCLE_SHA1:0:6}" .
+      - run:
+          name: Push application Docker image
+          command: |
+            docker login --username $DOCKER_HUB_USER --password $DOCKER_HUB_ACCESS_TOKEN
+            docker push "pevanscfi/procare-exercise:${CIRCLE_SHA1:0:6}"
+  rspec:
+    machine: # executor type
+      image: ubuntu-2004:current
+      docker_layer_caching: true
+    steps:
+      - checkout
+      - run:
+          name: Setup Code Climate test-reporter
+          command: |
+            sudo apt-get install jq
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+            chmod +x ./cc-test-reporter
+      - run:
+          name: Run rspec tests
+          command: |
+            mkdir -p coverage
+            docker run -v $(pwd)/coverage:/opt/app/coverage -e "RAILS_ENV=test" "pevanscfi/procare-exercise:${CIRCLE_SHA1:0:6}" rspec spec
+      - run:
+          name: Report test coverage
+          command: |
+            sed -i 's%\/opt\/app\/%%g' coverage/coverage.json
+            ./cc-test-reporter format-coverage -t simplecov coverage/coverage.json
+            ./cc-test-reporter upload-coverage
+  cypress:
+    machine: # executor type
+      image: ubuntu-2004:current
+      docker_layer_caching: true
+    steps:
+      - checkout
+      - run:
+          name: Start server
+          background: true
+          command: |
+            docker run -it -p 3000:3000 -e "RAILS_ENV=test" "pevanscfi/procare-exercise:${CIRCLE_SHA1:0:6}" bash -c "rake db:create db:migrate db:seed && bundle exec rails s"
+      - run:
+          name: Run E2E tests
+          command: |
+            docker run -it -e CYPRESS_baseUrl=http://172.17.0.1:3000 -v $PWD:/e2e -w /e2e  cypress/included:12.6.0
+
+  deploy:
+    working_directory: /
+    docker:
+      - image: pevanscfi/ops-toolbox:latest
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "ef:9b:5b:60:63:61:04:a9:52:32:e7:cd:0b:d7:a2:43"
+      - run:
+          name: Update the gitops repo
+          command: |
+            git config --global user.email "paul+circleci@wevans.io"
+            git config --global user.name "CircleCI"
+            git clone git@github.com:wevanscfi/homelab-gitops.git
+            cd homelab-gitops
+            yq e -i '(.spec.source.helm.parameters[] | select(.name == "image.tag")).value = "'"$CIRCLE_SHA1:0:6"'"' manifests/wevans/templates/procare-exercise.yaml
+            git add manifests/wevans/templates/procare-exercise.yaml
+            git commit -m "Deploy procare-exercise: ${CIRCLE_SHA1:0:6}"
+            git push origin main
+
