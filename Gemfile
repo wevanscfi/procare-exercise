@@ -11,6 +11,7 @@ gem 'tzinfo-data'
 gem 'e2mmap'
 
 group :development, :test do
+  gem 'simplecov', require: false
   gem 'karafka-testing'
   gem 'rspec'
 end

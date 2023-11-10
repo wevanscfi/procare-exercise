@@ -6,3 +6,4 @@
 log/development.log
 log/production.log
 tmp
+coverage

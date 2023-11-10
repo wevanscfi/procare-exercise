@@ -3,6 +3,10 @@
 ENV['RAILS_ENV'] = 'test'
 
 require 'karafka/testing/rspec/helpers'
+require 'simplecov'
+require "simplecov_json_formatter"
+SimpleCov.formatter = SimpleCov::Formatter::JSONFormatter
+SimpleCov.start 'rails'
 
 RSpec.configure do |config|
   config.disable_monkey_patching!
