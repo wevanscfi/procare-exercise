@@ -30,8 +30,7 @@ jobs:
       - run:
           name: Build application Docker image
           command: |
-            docker pull "pevanscfi/procare-exercise" || echo "Latest not found"
-            docker build -t procare-exercise .
+            docker build --cache-from=procare-exercise -t procare-exercise .
       # Test Image
       - run:
           name: Setup Code Climate test-reporter
@@ -63,7 +62,7 @@ jobs:
           name: Push application Docker image
           command: |
             docker login --username $DOCKER_HUB_USER --password $DOCKER_HUB_ACCESS_TOKEN
-            docker tag procare-exercise "pevanscfi/procare-exercise:${CIRCLE_SHA1:0:6}" .
+            docker tag procare-exercise "pevanscfi/procare-exercise:${CIRCLE_SHA1:0:6}"
             docker push "pevanscfi/procare-exercise:${CIRCLE_SHA1:0:6}"
   deploy:
     working_directory: /
