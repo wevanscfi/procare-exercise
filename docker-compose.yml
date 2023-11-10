@@ -2,6 +2,7 @@ version: '2'
 
 volumes:
   db_data:
+  kafka_data:
 
 services:
   web:
@@ -12,6 +13,9 @@ services:
       - 3000:3000
     volumes:
       - .:/opt/app
+    tmpfs:
+      - /opt/app/tmp/
+      - /opt/app/log/
     depends_on:
       - postgres
       - kafka
@@ -21,18 +25,20 @@ services:
       DATABASE_USERNAME: postgres
       DATABASE_PASSWORD: localpw
       KAFKA_HOST: kafka
+      PIDFILE: /dev/null
 
   consumer:
     build:
       context: .
       dockerfile: Dockerfile
     command:
-      - bundle
-      - exec
       - karafka
       - server
     volumes:
       - .:/opt/app
+    tmpfs:
+      - /opt/app/tmp/
+      - /opt/app/log/
     depends_on:
       - postgres
       - kafka
@@ -56,10 +62,10 @@ services:
   kafka:
     container_name: kafka
     image: confluentinc/cp-kafka:7.5.1
-
     ports:
       - 9092:9092
-
+    volumes:
+      - kafka_data:/var/lib/zookeeper/data
     environment:
       CLUSTER_ID: kafka-docker-cluster-1
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
