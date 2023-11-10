@@ -6,6 +6,7 @@ volumes:
 
 services:
   web:
+    image: procare-exercise
     build:
       context: .
       dockerfile: Dockerfile
@@ -28,6 +29,7 @@ services:
       PIDFILE: /dev/null
 
   consumer:
+    image: procare-exercise
     build:
       context: .
       dockerfile: Dockerfile
