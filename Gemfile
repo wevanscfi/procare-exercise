@@ -4,7 +4,7 @@ source 'https://rubygems.org'
 
 gem 'karafka', '>= 2.2.4'
 gem 'karafka-web'
-gem 'puma'
+gem 'puma', '>= 6.4.2'
 gem 'rails', '~> 7.0'
 gem 'pg'
 gem 'tzinfo-data'
