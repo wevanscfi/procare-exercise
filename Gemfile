@@ -13,7 +13,7 @@ gem 'e2mmap'
 group :development, :test do
   gem 'simplecov', require: false
   gem 'karafka-testing'
-  gem 'rspec-rails'
+  gem 'rspec-rails', '>= 8.0.0'
   gem 'rspec-benchmark'
 end
 
